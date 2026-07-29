@@ -1,43 +1,41 @@
+const http = require("http");
 const WebSocket = require("ws");
 
 const PORT = process.env.PORT || 8080;
 
-const server = new WebSocket.Server({
-    port: PORT
+// Create a normal HTTP server
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("ChatRoom WebSocket server is running!");
 });
+
+// Attach a WebSocket server to it
+const wss = new WebSocket.Server({ server });
 
 let clients = [];
 
-server.on("connection", socket => {
-
+wss.on("connection", (socket) => {
     console.log("Someone connected");
 
     clients.push(socket);
 
-
-    socket.on("message", message => {
-
+    socket.on("message", (message) => {
         console.log(message.toString());
 
-        // send message to everybody
         clients.forEach(client => {
-
-            client.send(message.toString());
-
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(message.toString());
+            }
         });
-
     });
 
-
     socket.on("close", () => {
-
         console.log("Someone disconnected");
 
         clients = clients.filter(client => client !== socket);
-
     });
-
 });
 
-
-console.log("Server running on port 8080");
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
