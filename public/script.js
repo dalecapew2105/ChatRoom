@@ -3,7 +3,7 @@
 //);
 
 const socket = new WebSocket(
-    "wss://chatroom-9doy.onrender.com"
+    window.location.origin.replace("http", "ws")
 );
 
 socket.onopen = () => {
